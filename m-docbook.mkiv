@@ -1,0 +1,177 @@
+% \enabletrackers[context*]
+
+\usemodule[cals]
+
+% \startxmlsetups xml:whatever:a
+%     \xmlsetsetup {#1} {*} {xml:*}
+% \stopxmlsetups
+
+% \xmlregisterdocumentsetup{main}{xml:whatever:a}
+
+\startxmlsetups xml:whatever:a
+    \xmlsetsetup {#1} {
+        article|
+        simpara|
+        itemizedlist|orderedlist|listitem|
+        emphasis|literal|
+        superscript|subscript|
+        equation|inlineequation|
+        figure|mediaobject|informalfigure
+    } {xml:*}
+    \xmlsetsetup {#1} {
+        imageobject/imagedata
+    } {xml:image}
+    \xmlsetsetup {#1} {
+        imageobject
+    } {+}
+    \xmlsetfunction {#1} {table} {moduledata.cals.table}
+\stopxmlsetups
+
+\xmlregisterdocumentsetup{main}{xml:whatever:a}
+
+\startxmlsetups xml:article
+    \startstandardmakeup
+        \setupalign[middle]
+        \start
+            \bfd \darkred \setupinterlinespace
+            \begstrut
+            \xmltext{#1}{/info/title}
+            \endstrut
+            \par
+        \stop
+        \blank[3*big]
+        \xmldoiftext {#1} {/info/author/personname} {
+            \start
+                \bfa \setupinterlinespace
+                \begstrut
+                \xmltext{#1}{/info/author/personname/firstname}
+                \space
+                \xmltext{#1}{/info/author/personname/surname}
+                \endstrut
+                \par
+            \stop
+        }
+        \blank[3*big]
+        \xmldoiftext {#1} {/info/date} {
+            \xmlfirst {#1} {/info/date}
+        }
+        \vfill
+    \stopstandardmakeup
+    \startfrontmatter
+        \starttitle[title={Contents}]
+            \placelist[chapter,section][criterium=text]
+        \stoptitle
+    \stopfrontmatter
+    \startbodymatter
+        \xmlfilter{#1}{/section/command(xml:section)}
+    \stopbodymatter
+\stopxmlsetups
+
+\startxmlsetups xml:section
+    \startsectionlevel[title={\xmltext{#1}{/title}}]
+        \xmlall{#1}{/!title}
+    \stopsectionlevel
+\stopxmlsetups
+
+\startxmlsetups xml:simpara
+    \xmlflush{#1}\par
+\stopxmlsetups
+
+\startxmlsetups xml:itemizedlist
+    \startitemize
+        \xmlflush{#1}
+    \stopitemize
+\stopxmlsetups
+
+\defineitemgroup[ordered]
+\setupitemgroup[ordered][1][symbol=n]
+\setupitemgroup[ordered][2][symbol=a]
+\setupitemgroup[ordered][3][symbol=i]
+
+\startxmlsetups xml:orderedlist
+    \startitemgroup[ordered]
+        \xmlflush{#1}
+    \stopitemgroup
+\stopxmlsetups
+
+\startxmlsetups xml:listitem
+    \startitem
+        \xmlflush{#1}
+    \stopitem
+\stopxmlsetups
+
+\xmlmapvalue{emphasis}{strong}{\bf}
+\xmlmapvalue{emphasis}{normal}{\em}
+
+\startxmlsetups xml:emphasis
+    \dontleavehmode
+    \start
+    \xmlvalue{emphasis}{\xmlattdef{#1}{role}{normal}}{normal}
+    \xmlflush{#1}
+    \stop
+\stopxmlsetups
+
+\startxmlsetups xml:literal
+    \dontleavehmode
+    \start
+    \tt
+    \xmlflush{#1}
+    \stop
+\stopxmlsetups
+
+\startxmlsetups xml:superscript
+    \high{\xmlflush{#1}}
+\stopxmlsetups
+
+\startxmlsetups xml:subscript
+    \low{\xmlflush{#1}}
+\stopxmlsetups
+
+\startluacode
+    function xml.finalizers.tex.cdatatocontext(c)
+        context(xml.cdata(c[1]))
+    end
+\stopluacode
+
+\startxmlsetups xml:equation
+    \startformula
+        \xmlfilter{#1}{/mathphrase/cdatatocontext()}
+    \stopformula
+\stopxmlsetups
+
+\startxmlsetups xml:inlineequation
+    \startimath
+        \xmlfilter{#1}{/mathphrase/cdatatocontext()}
+    \stopimath
+\stopxmlsetups
+
+\startxmlsetups xml:image
+    \removeunwantedspaces
+    \dontleavehmode
+    \externalfigure[\xmlatt{#1}{fileref}]
+    \ignorespaces
+\stopxmlsetups
+
+\startxmlsetups xml:figure
+    \startplacefigure[title={\xmltext{#1}{/title}}]
+        % depends ...
+        \ignorespaces
+        \midaligned{\xmlall{#1}{/!title}}
+        \removeunwantedspaces
+    \stopplacefigure
+\stopxmlsetups
+
+\startxmlsetups xml:informalfigure
+    \startlinecorrection
+        \ignorespaces
+        \xmlall{#1}{/!title}
+        \removeunwantedspaces
+    \stoplinecorrection
+\stopxmlsetups
+
+\startxmlsetups xml:mediaobject
+    % depends ...
+    \ignorespaces
+    \xmlall{#1}{/!textobject}
+    \removeunwantedspaces
+\stopxmlsetups
