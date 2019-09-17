@@ -11,11 +11,12 @@
 \startxmlsetups xml:whatever:a
     \xmlsetsetup {#1} {
         article|
+        section|
         simpara|
         itemizedlist|orderedlist|listitem|
         emphasis|literal|
         superscript|subscript|
-        equation|inlineequation|
+        equation|inlineequation|informalequation|
         figure|mediaobject|informalfigure
     } {xml:*}
     \xmlsetsetup {#1} {
@@ -68,9 +69,9 @@
 \stopxmlsetups
 
 \startxmlsetups xml:section
-    \startsectionlevel[title={\xmltext{#1}{/title}}]
+    \startstructurelevel[main][title={\xmltext{#1}{/title}}]
         \xmlall{#1}{/!title}
-    \stopsectionlevel
+    \stopstructurelevel
 \stopxmlsetups
 
 \startxmlsetups xml:simpara
@@ -143,6 +144,12 @@
     \startimath
         \xmlfilter{#1}{/mathphrase/cdatatocontext()}
     \stopimath
+\stopxmlsetups
+
+\startxmlsetups xml:informalequation
+    \startdmath
+        \xmlfilter{#1}{/mathphrase/cdatatocontext()}
+    \stopdmath
 \stopxmlsetups
 
 \startxmlsetups xml:image
